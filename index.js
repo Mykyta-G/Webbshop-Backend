@@ -14,7 +14,22 @@ db.prepare(`CREATE TABLE IF NOT EXISTS products (
   price REAL NOT NULL
 )`).run();
 
+// Create users table if it doesn't exist
+db.prepare(`CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  is_admin INTEGER NOT NULL DEFAULT 0
+)`).run();
+
 app.use(express.json());
+
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  // 1. Look up user in database
+  // 2. Compare password (hash)
+  // 3. Respond with success or error
+}); 
 
 // Get all products
 app.get('/api/products', (req, res) => {
@@ -47,6 +62,7 @@ app.post('/api/products', (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
