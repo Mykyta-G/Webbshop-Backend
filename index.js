@@ -26,6 +26,16 @@ app.get('/api/products', (req, res) => {
   }
 });
 
+app.get('/api/products/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const row = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
+    res.json(row);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Add a product
 app.post('/api/products', (req, res) => {
   const { name, price } = req.body;
