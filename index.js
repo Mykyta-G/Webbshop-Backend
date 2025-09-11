@@ -11,6 +11,7 @@ console.log('Connected to SQLite database');
 db.prepare(`CREATE TABLE IF NOT EXISTS products (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
+  description TEXT,
   price REAL NOT NULL
 )`).run();
 
@@ -22,14 +23,29 @@ db.prepare(`CREATE TABLE IF NOT EXISTS users (
   is_admin INTEGER NOT NULL DEFAULT 0
 )`).run();
 
+// Default users
+const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
+if (userCount === 0) {
+  db.prepare('INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)').run('admin', 'adminpassword', 1);
+  db.prepare('INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)').run('user', 'userpassword', 0);
+}
+
 app.use(express.json());
 
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
   // 1. Look up user in database
+  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+  if (!user) {
+    return res.status(401).json({ error: 'Invalid username or password' });
+  }
   // 2. Compare password (hash)
-  // 3. Respond with success or error
-}); 
+  if (user.password !== password) {
+    return res.status(401).json({ error: 'Invalid username or password' });
+  }
+  // 3. Respond 
+  res.json({ message: 'Login successful', user });
+});
 
 // Get all products
 app.get('/api/products', (req, res) => {
@@ -53,16 +69,14 @@ app.get('/api/products/:id', (req, res) => {
 
 // Add a product
 app.post('/api/products', (req, res) => {
-  const { name, price } = req.body;
+  const { name, description, price } = req.body;
   try {
-    const stmt = db.prepare('INSERT INTO products (name, price) VALUES (?, ?)');
-    const info = stmt.run(name, price);
-    res.json({ id: info.lastInsertRowid, name, price });
+    const info = db.prepare('INSERT INTO products (name, description, price) VALUES (?, ?, ?)').run(name, description, price);
+    res.json({ id: info.lastInsertRowid, name, description, price });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
