@@ -2,6 +2,9 @@ const express = require('express');
 const Database = require('better-sqlite3');
 const app = express();
 const PORT = 3000;
+const cors = require('cors');
+
+app.use(cors());
 
 // Connect to SQLite database (creates file if it doesn't exist)
 const db = new Database('webshop.db');
@@ -12,7 +15,9 @@ db.prepare(`CREATE TABLE IF NOT EXISTS products (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   description TEXT,
-  price REAL NOT NULL
+  price REAL NOT NULL,
+  color TEXT NOT NULL,
+  spin TEXT NOT NULL
 )`).run();
 
 // Create users table if it doesn't exist
