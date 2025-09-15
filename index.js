@@ -4,7 +4,10 @@ const app = express();
 const PORT = 3000;
 const cors = require('cors');
 
-app.use(cors());
+//app.use(cors());
+
+app.use(express.static(__dirname));
+app.use(express.json());
 
 // Connect to SQLite database (creates file if it doesn't exist)
 const db = new Database('webshop.db');
